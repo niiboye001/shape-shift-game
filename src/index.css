@@ -1,99 +1,359 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700;900&display=swap');
-
 :root {
-    --bg-dark: #050505;
-    --bg-card: rgba(255, 255, 255, 0.05);
-    --neon-pink: #ff00ff;
-    --neon-blue: #00f2ff;
-    --neon-green: #39ff14;
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --sh-pink: 0 0 15px rgba(255, 0, 255, 0.5);
-    --sh-blue: 0 0 15px rgba(0, 242, 255, 0.5);
-    --sh-green: 0 0 15px rgba(57, 255, 20, 0.5);
+    /* Common Safari Tokens */
+    --tile-bg: #ffffff;
+    --tile-text: #1a1a1a;
+    --tile-shadow: rgba(0, 0, 0, 0.2);
+    --drop-zone-bg: rgba(255, 255, 255, 0.1);
+    --drop-zone-border: rgba(255, 255, 255, 0.3);
+
+    /* Jungle Biome */
+    --jungle-deep: #064E3B;
+    --jungle-leaf: #10B981;
+    --jungle-accent: #FDE047;
+
+    /* Ocean Biome */
+    --ocean-deep: #1E3A8A;
+    --ocean-surf: #3B82F6;
+    --ocean-accent: #60A5FA;
+
+    /* Desert Biome */
+    --desert-deep: #7C2D12;
+    --desert-sand: #F97316;
+    --desert-accent: #FCD34D;
+
+    --transition-speed: 0.4s;
 }
 
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    font-family: 'Outfit', 'Inter', sans-serif;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-primary);
-    overflow: hidden;
-    height: 100vh;
+    background-color: var(--jungle-deep);
+    transition: background-color var(--transition-speed) ease;
+    min-height: 100vh;
+    overflow-y: auto;
+    /* Allow scrolling if content is too tall */
+}
+
+.safari-canvas {
     width: 100vw;
+    min-height: 100vh;
+    /* Use min-height instead of fixed height */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(0.5rem, 2vh, 2rem);
+    /* Dynamic padding */
+}
+
+@media (min-width: 768px) {
+    .safari-canvas {
+        padding: 2rem;
+    }
+}
+
+/* Biome State Overrides */
+.biome-jungle {
+    background-color: var(--jungle-deep);
+}
+
+.biome-ocean {
+    background-color: var(--ocean-deep);
+}
+
+.biome-desert {
+    background-color: var(--desert-deep);
+}
+
+/* UI Elements */
+.safari-header {
+    z-index: 10;
+    text-align: center;
+    margin-bottom: clamp(0.5rem, 1.5vh, 1.5rem);
+    color: white;
+}
+
+.safari-header h1 {
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    /* Adjusted font size */
+    font-weight: 900;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Character Area */
+.safari-animal {
+    font-size: clamp(3.5rem, 15vh, 8rem);
+    /* Scale based on height to stay on screen */
+    margin: 0.5rem 0;
+    /* Reduced margin */
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+}
+
+/* Board Layout */
+.puzzle-board {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Start from top to avoid pushing things off bottom */
+    align-items: center;
+    gap: clamp(1rem, 3vh, 2rem);
+    /* Dynamic vertical gap */
+    padding-bottom: 2rem;
+}
+
+/* Target Slots */
+.drop-container {
+    display: flex;
+    gap: clamp(0.2rem, 1vw, 0.6rem);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.drop-slot {
+    width: clamp(40px, 8vw, 85px);
+    /* Smaller on mobile to fit long words */
+    height: clamp(60px, 10vw, 110px);
+    background: var(--drop-zone-bg);
+    border: 2px dashed var(--drop-zone-border);
+    border-radius: clamp(8px, 2vw, 16px);
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.3s ease;
 }
 
-#root {
+.drop-slot.active {
+    border-color: var(--jungle-accent);
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+.drop-slot.correct {
+    border-style: solid;
+    border-color: #4ADE80;
+    background: rgba(74, 222, 128, 0.2);
+    font-size: clamp(1.2rem, 3.5vw, 2.8rem);
+}
+
+/* Letter Tiles */
+.tiles-container {
+    display: flex;
+    gap: clamp(0.5rem, 1.5vw, 1.2rem);
+    flex-wrap: wrap;
+    justify-content: center;
     width: 100%;
-    height: 100%;
+    max-width: 900px;
 }
 
-h1,
-h2,
-h3 {
-    font-family: 'Outfit', sans-serif;
+.letter-tile {
+    width: clamp(45px, 8vw, 85px);
+    height: clamp(65px, 10vw, 110px);
+    background: var(--tile-bg);
+    color: var(--tile-text);
+    border-radius: clamp(8px, 2vw, 16px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(1.2rem, 3.5vw, 2.8rem);
+    font-weight: 900;
+    cursor: grab;
+    box-shadow:
+        0 clamp(4px, 1vw, 8px) 0 var(--tile-shadow),
+        0 10px 20px rgba(0, 0, 0, 0.15);
+    user-select: none;
+    touch-action: none;
 }
 
-.glass {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+.letter-tile:active {
+    cursor: grabbing;
+}
+
+/* Biome-specific accents */
+.biome-ocean .drop-slot.active {
+    border-color: var(--ocean-accent);
+}
+
+.biome-desert .drop-slot.active {
+    border-color: var(--desert-accent);
+}
+
+/* UI Badges */
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
     border-radius: 20px;
-}
-
-.neon-text-pink {
-    color: var(--neon-pink);
-    text-shadow: var(--sh-pink);
-}
-
-.neon-text-blue {
-    color: var(--neon-blue);
-    text-shadow: var(--sh-blue);
-}
-
-.neon-text-green {
-    color: var(--neon-green);
-    text-shadow: var(--sh-green);
-}
-
-.neon-border-pink {
-    border: 2px solid var(--neon-pink);
-    box-shadow: var(--sh-pink);
-}
-
-.neon-border-blue {
-    border: 2px solid var(--neon-blue);
-    box-shadow: var(--sh-blue);
-}
-
-.neon-border-green {
-    border: 2px solid var(--neon-green);
-    box-shadow: var(--sh-green);
-}
-
-button {
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
     font-weight: 700;
+    color: white;
+    backdrop-filter: blur(5px);
+}
+
+.glass-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.gap-6 {
+    gap: 1.5rem;
+}
+
+.p-8 {
+    padding: 2rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-4xl {
+    font-size: 2.25rem;
+}
+
+.font-black {
+    font-weight: 900;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+/* Difficulty Selection UI (Modern Minimalist) */
+.difficulty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.difficulty-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.segmented-control {
+    background: white;
+    padding: 0.3rem;
+    border-radius: 100px;
+    display: flex;
+    gap: 0.1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: clamp(280px, 70vw, 450px);
+    /* Responsive width */
+    max-width: 90vw;
+}
+
+.segment-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: clamp(0.5rem, 1.5vh, 1rem) clamp(0.3rem, 1vw, 1.2rem);
+    border-radius: 100px;
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    /* Fluid font size */
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.segment-btn.active {
+    background: #f1f5f9;
+    color: #4f46e5;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.segment-btn:hover:not(.active) {
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.start-action-btn {
+    margin-top: 1rem;
+    background: #4f46e5;
+    color: white;
+    padding: clamp(0.8rem, 2vh, 1.2rem) clamp(2rem, 5vw, 4rem);
+    border-radius: 100px;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+
+.start-action-btn.ready {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+}
+
+.start-action-btn:hover {
+    background: #4338ca;
+    transform: scale(1.05);
+}
+
+/* Start Overlay */
+.safari-overlay {
+    position: fixed;
+    inset: 0;
+    background: #f8fafc;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.safari-btn {
+    width: 100%;
+    min-width: 280px;
+    padding: 1.2rem 2rem;
+    border-radius: 50px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-button:hover {
+.safari-btn:hover {
     transform: scale(1.05);
-}
-
-button:active {
-    transform: scale(0.95);
+    border-color: white;
 }
